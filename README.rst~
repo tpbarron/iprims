@@ -1,0 +1,40 @@
+===============================
+Interaction Primitives
+===============================
+
+
+.. image:: https://img.shields.io/pypi/v/iprims.svg
+        :target: https://pypi.python.org/pypi/iprims
+
+.. image:: https://img.shields.io/travis/tpbarron/iprims.svg
+        :target: https://travis-ci.org/tpbarron/iprims
+
+.. image:: https://readthedocs.org/projects/iprims/badge/?version=latest
+        :target: https://iprims.readthedocs.io/en/latest/?badge=latest
+        :alt: Documentation Status
+
+.. image:: https://pyup.io/repos/github/tpbarron/iprims/shield.svg
+     :target: https://pyup.io/repos/github/tpbarron/iprims/
+     :alt: Updates
+
+
+A basic implementation of the Interaction Primitives framework for human robot collaboration
+
+
+* Free software: MIT license
+* Documentation: https://iprims.readthedocs.io.
+
+
+Features
+--------
+
+* TODO
+
+Credits
+---------
+
+This package was created with Cookiecutter_ and the `audreyr/cookiecutter-pypackage`_ project template.
+
+.. _Cookiecutter: https://github.com/audreyr/cookiecutter
+.. _`audreyr/cookiecutter-pypackage`: https://github.com/audreyr/cookiecutter-pypackage
+
