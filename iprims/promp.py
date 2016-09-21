@@ -181,13 +181,13 @@ class ProbabilisticMovementPrimitive:
         return w
 
 
-    def get_trajectory_from_weights(self, w, secs=10):
+    def get_trajectory_from_weights(self, w):
         """
         Return the trajectory described by w
         """
         traj = np.dot(self.psi_matrix.T, np.squeeze(w))
         # set the real time instead of the learned time
-        traj[:,0] = np.linspace(0, secs, self.timesteps)
+        #traj[:,0] = np.linspace(0, secs, self.timesteps)
         return traj
         # # psi_matrix is (num_bases, timesteps)
         # # w is (num_bases, dofs)
