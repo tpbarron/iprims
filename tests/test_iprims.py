@@ -11,7 +11,7 @@ Tests for `iprims` module.
 import pytest
 
 
-from iprims import iprims
+#from iprims import iprims
 
 
 class TestIprims(object):

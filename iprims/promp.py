@@ -89,17 +89,6 @@ class ProbabilisticMovementPrimitive:
 
             w = np.hstack(w)
             weights[i,:] = w
-            # w_obs, w_con = [], []
-            #
-            # for d in range(self.num_dof_obs):
-            #     w_obs.append(self.get_weights(traj[0], d))
-            #
-            # for d in range(self.num_dof_con):
-            #     w_con.append(self.get_weights(traj[1], d))
-            #
-            # w_obs = np.hstack(w_obs)
-            # w_con = np.hstack(w_con)
-            # weights[i,:] = np.hstack((w_obs, w_con))
 
         mean_weights = weights.mean(axis=0)
         self.Uw = mean_weights
@@ -186,21 +175,8 @@ class ProbabilisticMovementPrimitive:
         Return the trajectory described by w
         """
         traj = np.dot(self.psi_matrix.T, np.squeeze(w))
-        # set the real time instead of the learned time
-        #traj[:,0] = np.linspace(0, secs, self.timesteps)
         return traj
-        # # psi_matrix is (num_bases, timesteps)
-        # # w is (num_bases, dofs)
-        # traj = np.empty((self.timesteps, w.shape[1]))
-        # for dof in range(w.shape[1]):
-        #     # for each dof in w
-        #     # multiply row of w by bases to get trajectory
-        #     wdof = w[:,dof]
-        #     wmat = np.matlib.repmat(wdof, self.timesteps, 1).T
-        #     prod = self.psi_matrix * wmat
-        #     tdof = np.sum(prod, axis=0)
-        #     traj[:,dof] = tdof
-        # return traj
+
 
 
 
