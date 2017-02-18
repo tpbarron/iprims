@@ -184,27 +184,102 @@ class ProbabilisticMovementPrimitive:
     # PSI matrix generation
     ############################################################################
 
-    def compute_basis_functions(self, nder=1):
+    def compute_basis_functions(self):
         """
         This function requires:
             num_bases - the number of basisfunctions
             timesteps - the number of timesteps
             num_dof - number of dofs
-            nder - number of derivatives (default 1)
         """
         c, h = self.get_basis_func_params()
         z = np.linspace(0, 1, self.timesteps)
 
         # compute the basis function activations at each timestep
-        b = np.exp(-1 * np.square(
-                             (np.matlib.repmat(z, self.num_bases, 1) - np.matlib.repmat(c[np.newaxis].T, 1, self.timesteps))
-                        ) / (2.0 * h))
-        sum_b = np.matlib.repmat(np.sum(b, axis=0), self.num_bases, 1)
-        b_norm = np.divide(b, sum_b)
+        b = np.empty((self.num_bases, self.timesteps))
+        # for each basis function compute activation at timestep
+        for bf in range(self.num_bases):
+            for ts in range(self.timesteps):
+                # compute activation for bf at timestep
+                act = np.exp(-np.square(z[ts] - c[bf]) / (2.0 * h))
+                b[bf][ts] = act
+        # b = np.exp(-1 * np.square(
+        #                      (np.matlib.repmat(z, self.num_bases, 1) - np.matlib.repmat(c[np.newaxis].T, 1, self.timesteps))
+        #                 ) / (2.0 * h))
+        b_col_sum = np.sum(b, axis=0)
+        b_sum = np.repeat(b_col_sum[np.newaxis], self.num_bases, axis=0)
+        # b_sum = np.matlib.repmat(np.sum(b, axis=0), self.num_bases, 1)
+        b_norm = np.divide(b, b_sum)
         self.psi_matrix = b_norm
 
 
+    def get_basis_func_deriv(self, nth=1):
+        """
+        Returns the normed basis function derivatives
+        for d = 1 to 4
+        """
+        c, h = self.get_basis_func_params()
+        z = np.linspace(0, 1, self.timesteps)
+
+        bases = np.empty((self.num_bases, self.timesteps))
+
+        if nth == 1:
+            # compute the basis function activations at each timestep
+            # for each basis function compute activation at timestep
+            for bf in range(self.num_bases):
+                for ts in range(self.timesteps):
+                    # compute activation for bf at timestep
+                    x = z[ts]
+                    b = c[bf]
+
+                    # act = np.exp(-np.square(x - b) / (2.0 * h))
+                    # bases[bf][ts] = act
+                    deriv = (b - x) * np.exp(-np.square(x - b) / (2.0 * h)) / float(h)
+                    bases[bf][ts] = deriv
+
+        elif nth == 2:
+            # compute the basis function activations at each timestep
+            # for each basis function compute activation at timestep
+            for bf in range(self.num_bases):
+                for ts in range(self.timesteps):
+                    # compute activation for bf at timestep
+                    x = z[ts]
+                    b = c[bf]
+                    deriv = (b**2 - 2*b*x - h + x**2) * np.exp(-np.square(x - b) / (2.0 * h)) / float(h ** 2)
+                    bases[bf][ts] = deriv
+
+        elif nth == 3:
+            # compute the basis function activations at each timestep
+            for bf in range(self.num_bases):
+                for ts in range(self.timesteps):
+                    # compute activation for bf at timestep
+                    x = z[ts]
+                    b = c[bf]
+                    deriv = (b**2 - 2*b*x - 3*h + x**2) * (b - x) * np.exp(-np.square(x - b) / (2.0 * h)) / float(h ** 3)
+                    bases[bf][ts] = deriv
+
+        elif nth == 4:
+            # compute the basis function activations at each timestep
+            for bf in range(self.num_bases):
+                for ts in range(self.timesteps):
+                    # compute activation for bf at timestep
+                    x = z[ts]
+                    b = c[bf]
+                    deriv = (x - b)**4 * np.exp(-np.square(x - b) / (2.0 * h)) / float(h ** 4) \
+                        - 6 * (x - b)**2 * np.exp(-np.square(x - b) / (2.0 * h)) / float(h**3) \
+                        + 3 * np.exp(-np.square(x - b) / (2.0 * h)) / float(h**2)
+                    bases[bf][ts] = deriv
+
+        bases_col_sum = np.sum(np.abs(np.copy(bases)), axis=0)
+        bases_sum = np.repeat(bases_col_sum[np.newaxis], self.num_bases, axis=0)
+        bases_norm = np.divide(bases, bases_sum)
+        bases = bases_norm
+        return bases
+
+
     def get_basis_func_params(self):
+        """
+        Get centers and widths of basis functions
+        """
         c, h = None, None
         if (self.num_bases > 5):
             p = 1.0 / (self.num_bases - 3)
@@ -217,6 +292,7 @@ class ProbabilisticMovementPrimitive:
             c = np.linspace(0, 1, self.num_bases)
             h = (2 * 0.5 * (c[1] - c[0])) ** 2.0 #1.0/self.num_bases
         return c, h
+
 
 
 
@@ -287,8 +363,8 @@ class ProbabilisticMovementPrimitive:
         x = np.arange(0, self.timesteps)
         ys = []
         for d in range(self.num_dof):
-             y = 1.0/10000 * (x - 50.0)**3 + 12.5
-             ys.append(y)
+            y = 1.0/10000 * (x - 50.0)**3 + 12.5
+            ys.append(y)
 
         return np.stack((ys)).T
 
@@ -370,6 +446,16 @@ class ProbabilisticMovementPrimitive:
         plt.show()
 
 
+    def plot_basis_functions_deriv(self, nth=1):
+        psi_deriv = self.get_basis_func_deriv(nth=nth)
+        for b in range(self.num_bases):
+            plt.plot(psi_deriv[b,:])
+        plt.title('Basis functions')
+        plt.xlabel('timesteps')
+        plt.ylabel('activations')
+        plt.show()
+
+
     def plot_trajectory_approximation(self, w, title=None):
         """
         Plot trajectory that is represented by the bases and the weights
@@ -416,6 +502,10 @@ if __name__ == "__main__":
     if (plot):
         promp.plot_all_trajectories()
         promp.plot_basis_functions()
+        promp.plot_basis_functions_deriv(nth=1)
+        promp.plot_basis_functions_deriv(nth=2)
+        promp.plot_basis_functions_deriv(nth=3)
+        promp.plot_basis_functions_deriv(nth=4)
         promp.plot_trajectory_approximation(prior, title='Trajectory approx. for prior')
 
     sample = promp.get_partial_sample(random=rnd, length=25)
